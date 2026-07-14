@@ -1,0 +1,14 @@
+# Interface graphique
+PySide6>=6.5
+
+# Appels au serveur Ollama local
+requests>=2.28
+
+# Lecture EXIF
+Pillow>=10.0
+
+# Reconnaissance faciale (optionnelle mais recommandee)
+insightface>=0.7
+onnxruntime>=1.16
+opencv-python>=4.8
+numpy>=1.24

@@ -1,0 +1,17 @@
+# Donnees personnelles generees par l'application (jamais a versionner)
+Reference/
+faces_db.json
+face_cache.json
+rename_history.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Windows / editeurs
+desktop.ini
+Thumbs.db
+.vscode/
+.idea/
