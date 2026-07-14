@@ -52,8 +52,8 @@ GENERIC_TOKENS = {
     # captures d'ecran
     "screenshot", "screen", "capture", "snap",
     # messageries / telechargements
-    "wa", "fb", "msg", "received", "resized", "snapchat", "signal",
-    "telegram", "unnamed", "download", "scan",
+    "wa", "whatsapp", "at", "fb", "msg", "received", "resized", "snapchat",
+    "signal", "telegram", "unnamed", "download", "scan",
     # copies / retouches
     "copie", "copy", "edit", "edited",
 }
@@ -85,24 +85,47 @@ def is_generic_name(stem):
     return all(r.isdigit() or r in GENERIC_TOKENS for r in runs)
 
 
-# Horodatage AAAAMMJJ[_HHMMSS] present dans le nom (WhatsApp, Android, Pixel...).
+# Horodatage AAAAMMJJ[_HHMMSS] present dans le nom (WhatsApp mobile, Android, Pixel...).
 _NAME_TS_RE = re.compile(r"(?<!\d)(\d{8})(?:[_\-](\d{6})\d{0,3})?(?!\d)")
+
+# Variante avec separateurs : "2026-07-13 at 21.53.52" (WhatsApp Desktop),
+# "2026-07-13_21-53-52", "photo_2026.07.13"...
+_NAME_TS_SEP_RE = re.compile(
+    r"(?<!\d)(\d{4})[-_.](\d{2})[-_.](\d{2})"
+    r"(?:\D{1,4}(\d{2})[-_.h](\d{2})(?:[-_.m](\d{2}))?)?(?!\d)")
+
+
+def _valid_ts(date_part, time_part):
+    """Renvoie 'AAAAMMJJ_HHMMSS' si la date est plausible, sinon None."""
+    try:
+        dt = datetime.strptime(date_part + time_part, "%Y%m%d%H%M%S")
+    except ValueError:
+        return None
+    if 1990 <= dt.year <= datetime.now().year + 1:
+        return f"{date_part}_{time_part}"
+    return None
 
 
 def timestamp_from_name(stem):
     """Extrait un horodatage plausible du nom de fichier, sinon None.
 
     Ex. : IMG-20230703-WA0072 -> 20230703_000000 ;
-          PXL_20230703_143551123 -> 20230703_143551.
+          PXL_20230703_143551123 -> 20230703_143551 ;
+          WhatsApp Image 2026-07-13 at 21.53.52 -> 20260713_215352.
     """
     for m in _NAME_TS_RE.finditer(stem):
-        date_part, time_part = m.group(1), m.group(2) or "000000"
-        try:
-            dt = datetime.strptime(date_part + time_part, "%Y%m%d%H%M%S")
-        except ValueError:
-            continue
-        if 1990 <= dt.year <= datetime.now().year + 1:
-            return f"{date_part}_{time_part}"
+        ts = _valid_ts(m.group(1), m.group(2) or "000000")
+        if ts:
+            return ts
+    for m in _NAME_TS_SEP_RE.finditer(stem):
+        date_part = m.group(1) + m.group(2) + m.group(3)
+        if m.group(4):
+            time_part = m.group(4) + m.group(5) + (m.group(6) or "00")
+        else:
+            time_part = "000000"
+        ts = _valid_ts(date_part, time_part)
+        if ts:
+            return ts
     return None
 
 
