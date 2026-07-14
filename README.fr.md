@@ -6,6 +6,10 @@ Application de renommage intelligent de photos : vos fichiers `IMG_1234.jpg` dev
 
 Remarque : les libellés de l'interface (boutons, onglets) sont écrits sans accents ; ils sont cités tels quels dans ce manuel.
 
+![Onglet Renommage : grille de vignettes et propositions éditables](docs/Renaming_panel.png)
+
+![Visionneuse : reconnaissance faciale avec score par visage](docs/Face_recognition_panel.png)
+
 ## 1. Prérequis
 
 - **Système** : Windows, Linux ou macOS. Développé et testé sous Windows.

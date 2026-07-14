@@ -6,7 +6,9 @@ Rename your photo library intelligently, 100% locally: `IMG_1234.jpg` becomes `2
 
 *Documentation française complète : [README.fr.md](README.fr.md).*
 
-<!-- TODO: add a screenshot (thumbnail grid, viewer with face boxes, rename preview table) -->
+![Renaming tab: thumbnail grid and editable rename proposals](docs/Renaming_panel.png)
+
+![Viewer: face recognition with per-face scores](docs/Face_recognition_panel.png)
 
 ## Features
 
