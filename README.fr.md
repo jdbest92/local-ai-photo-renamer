@@ -1,14 +1,10 @@
 # Local AI Photo Renamer : manuel d'utilisation
 
-Application de renommage intelligent de photos : vos fichiers `IMG_1234.jpg` deviennent `20230703_143551_alice_plage.jpg`, grâce à un modèle vision local (Ollama) qui décrit la scène et à une reconnaissance faciale locale (insightface) qui identifie les personnes que vous lui avez apprises. Tout fonctionne sur votre machine, aucune photo ne quitte l'ordinateur.
+Application de renommage intelligent de photos : vos fichiers `IMG_1234.jpg` deviennent `20171028_163417_josephine_napoleon_chambre_royale.jpg`, grâce à un modèle vision local (Ollama) qui décrit la scène et à une reconnaissance faciale locale (insightface) qui identifie les personnes que vous lui avez apprises. Tout fonctionne sur votre machine, aucune photo ne quitte l'ordinateur.
 
 *For the English documentation, see [README.md](README.md).*
 
-Remarque : les libellés de l'interface (boutons, onglets) sont écrits sans accents ; ils sont cités tels quels dans ce manuel.
-
-![Onglet Renommage : grille de vignettes et propositions éditables](docs/Renaming_panel.png)
-
-![Visionneuse : reconnaissance faciale avec score par visage](docs/Face_recognition_panel.png)
+Remarque : les libellés de l'interface (boutons, onglets) sont écrits sans accents ; ils sont cités tels quels dans ce manuel. Les captures d'écran illustrent un exemple avec deux personnes enrôlées, Napoleon et Josephine.
 
 ## 1. Prérequis
 
@@ -70,11 +66,13 @@ La case "Sous-dossiers" inclut récursivement les photos des sous-dossiers (les 
 
 Cliquez sur une vignette : la photo s'affiche en grand à droite, et la détection de visages se lance automatiquement (le premier usage charge le modèle, comptez quelques secondes ; c'est indiqué dans le Journal).
 
+![Visionneuse : reconnaissance faciale avec score par visage](docs/Face_recognition_panel.png)
+
 Chaque visage détecté est encadré :
 
-Cadre vert : visage reconnu. L'étiquette indique le nom et le score de similarité, par exemple "Alice (0.52)".
+Cadre vert : visage reconnu. L'étiquette indique le nom et le score de similarité, par exemple "Josephine (0.74)".
 
-Cadre rouge : visage non reconnu au seuil actuel. L'étiquette indique le meilleur candidat et son score, par exemple "? (Bob 0.28)". Utile pour repérer les faux négatifs.
+Cadre rouge : visage non reconnu au seuil actuel. L'étiquette indique le meilleur candidat et son score, par exemple "? (Marc 0.11)" sur la statue en arrière-plan de la capture. Utile pour repérer les faux négatifs.
 
 Le seuil de reconnaissance (barre d'outils, 0.35 par défaut) se règle en direct : les cadres passent du rouge au vert sans relancer la détection. Baissez-le si des visages connus ne sont pas reconnus, montez-le si des inconnus sont identifiés à tort. Les détections sont mises en cache (`face_cache.json`) : revenir sur une photo déjà analysée est instantané, et changer le seuil ou enrôler quelqu'un ne refait pas la détection.
 
@@ -90,9 +88,11 @@ Les photos jamais analysées ne peuvent pas être filtrées : la barre d'état v
 
 Principe : rien n'est jamais renommé sans votre validation. Le flux est Analyser, puis relire et ajuster, puis Appliquer.
 
+![Onglet Renommage : grille de vignettes et propositions éditables](docs/Renaming_panel.png)
+
 Format des noms produits : `AAAAMMJJ_HHMMSS_description.ext`. L'horodatage vient de l'EXIF, à défaut d'une date présente dans le nom de fichier (formats WhatsApp, Android...), et en dernier recours de la date de modification. La description dépend du nom d'origine :
 
-Nom générique (IMG_1234, IMG-20230703-WA0072, Capture d'écran...) : description générée par le modèle vision. Si la reconnaissance faciale est cochée et reconnaît quelqu'un, son nom remplace les termes génériques et le modèle ne décrit que la scène (ex : `alice_plage` plutôt que `enfant_plage`).
+Nom générique (IMG_1234, IMG-20230703-WA0072, Capture d'écran...) : description générée par le modèle vision. Si la reconnaissance faciale est cochée et reconnaît quelqu'un, son nom remplace les termes génériques et le modèle ne décrit que la scène (ex : `josephine_napoleon_jardin_chateau` plutôt que `couple_jardin_chateau`, comme sur la capture ci-dessus).
 
 Nom déjà explicite : simple horodatage, sans appel au modèle.
 
@@ -141,8 +141,8 @@ local-ai-photo-renamer/
 │
 │   Créés automatiquement à l'usage (exclus du dépôt par le .gitignore) :
 ├── Reference/
-│   ├── Alice/                 # photos de référence d'Alice
-│   └── Bob/
+│   ├── Josephine/             # photos de référence de Josephine
+│   └── Napoleon/
 ├── faces_db.json              # empreintes des visages enrôlés
 ├── face_cache.json            # cache des détections
 └── rename_history.json        # historique des lots de renommage
