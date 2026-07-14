@@ -80,6 +80,8 @@ Le menu "Filtre personne" n'affiche que les photos où apparaît la personne cho
 
 Les photos jamais analysées ne peuvent pas être filtrées : la barre d'état vous l'indique le cas échéant. Cliquez alors sur "Analyser tout le dossier (pour le filtre)" : l'analyse tourne en arrière-plan (progression dans la barre d'état) et peut prendre plusieurs minutes sur des centaines de photos. Une fois faite, elle est en cache pour de bon.
 
+À ne pas confondre avec "Analyser le dossier (apercu)" de l'onglet Renommage : le bouton de la barre d'outils ne fait que détecter les visages pour alimenter ce filtre (aucun appel au modèle vision, aucune proposition de renommage), tandis que celui de l'onglet Renommage construit les propositions de nouveaux noms (section 8). Les deux partagent le cache de visages : lancer l'un accélère l'autre.
+
 ## 8. Renommage (onglet Renommage)
 
 Principe : rien n'est jamais renommé sans votre validation. Le flux est Analyser, puis relire et ajuster, puis Appliquer.

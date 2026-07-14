@@ -90,6 +90,8 @@ The "Filtre personne" menu shows only the photos where the chosen person appears
 
 Photos never analyzed cannot be filtered: the status bar tells you when that happens. Click "Analyser tout le dossier (pour le filtre)" (analyze the whole folder): the analysis runs in the background (progress in the status bar) and can take several minutes for hundreds of photos. Once done, it is cached for good.
 
+Not to be confused with "Analyser le dossier (apercu)" in the "Renommage" tab: the toolbar button only detects faces to feed this filter (no vision model call, no rename proposal), whereas the one in the "Renommage" tab builds the new-name proposals (section 8). Both share the face cache: running one speeds up the other.
+
 ## 8. Renaming ("Renommage" tab)
 
 Principle: nothing is ever renamed without your confirmation. The flow is Analyze, then review and adjust, then Apply.
