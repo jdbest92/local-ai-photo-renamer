@@ -4,7 +4,7 @@ Application de renommage intelligent de photos : vos fichiers `IMG_1234.jpg` dev
 
 *For the English documentation, see [README.md](README.md).*
 
-Remarque : les libellés de l'interface (boutons, onglets) sont écrits sans accents ; ils sont cités tels quels dans ce manuel. Les captures d'écran illustrent un exemple avec deux personnes enrôlées, Napoleon et Josephine.
+Remarque : quelques libellés de l'interface (noms d'onglets notamment) sont écrits sans accents ; ils sont cités tels quels dans ce manuel. Les captures d'écran illustrent un exemple avec deux personnes enrôlées, Napoleon et Josephine.
 
 ## 1. Prérequis
 
@@ -82,7 +82,7 @@ Le menu "Filtre personne" n'affiche que les photos où apparaît la personne cho
 
 Les photos jamais analysées ne peuvent pas être filtrées : la barre d'état vous l'indique le cas échéant. Cliquez alors sur "Analyser tout le dossier (pour le filtre)" : l'analyse tourne en arrière-plan (progression dans la barre d'état) et peut prendre plusieurs minutes sur des centaines de photos. Une fois faite, elle est en cache pour de bon.
 
-À ne pas confondre avec "Analyser le dossier (apercu)" de l'onglet Renommage : le bouton de la barre d'outils ne fait que détecter les visages pour alimenter ce filtre (aucun appel au modèle vision, aucune proposition de renommage), tandis que celui de l'onglet Renommage construit les propositions de nouveaux noms (section 8). Les deux partagent le cache de visages : lancer l'un accélère l'autre.
+À ne pas confondre avec "Analyser le dossier (aperçu)" de l'onglet Renommage : le bouton de la barre d'outils ne fait que détecter les visages pour alimenter ce filtre (aucun appel au modèle vision, aucune proposition de renommage), tandis que celui de l'onglet Renommage construit les propositions de nouveaux noms (section 8). Les deux partagent le cache de visages : lancer l'un accélère l'autre.
 
 ## 8. Renommage (onglet Renommage)
 
@@ -96,15 +96,17 @@ Nom générique (IMG_1234, IMG-20230703-WA0072, Capture d'écran...) : descripti
 
 Nom déjà explicite : simple horodatage, sans appel au modèle.
 
-Photo déjà horodatée par un passage précédent : ignorée, sauf si "Retraiter les photos deja horodatees" est coché, auquel cas les noms reconnus sont ajoutés sans toucher à l'horodatage.
+Photo déjà horodatée par un passage précédent : ignorée, sauf si "Retraiter les photos déjà horodatées" est coché, auquel cas les noms reconnus sont ajoutés sans toucher à l'horodatage.
 
 Options : modèle Ollama (gemma4:12b par défaut ; attention, gemma4:e4b a un bug connu et ne voit pas les images), timeout par photo (augmentez-le si le modèle charge lentement à froid), reconnaissance faciale, retraitement.
 
 Déroulement :
 
-1. Cliquez "Analyser le dossier (apercu)". La disponibilité d'Ollama et du modèle est vérifiée d'emblée. Les propositions apparaissent ligne par ligne. Les lignes grises sont ignorées (déjà traitées), les rouges sont en erreur, les autres sont proposées et cochées.
-2. Relisez. Le "Nouveau nom" est éditable : double-cliquez pour corriger une description ratée. Décochez les lignes à ne pas renommer. "Arreter" interrompt une analyse en cours.
-3. Cliquez "Appliquer la selection" et confirmez. Les fichiers sont renommés, le lot est enregistré dans l'historique, la grille se rafraîchit.
+1. Cliquez "Analyser le dossier (aperçu)". La disponibilité d'Ollama et du modèle est vérifiée d'emblée. Les propositions apparaissent ligne par ligne. Les lignes grises sont ignorées (déjà traitées), les rouges sont en erreur, les autres sont proposées et cochées.
+2. Relisez. Cliquez sur une ligne pour afficher la photo dans la visionneuse. Le "Nouveau nom" est éditable : double-cliquez pour corriger une description ratée. Décochez les lignes à ne pas renommer. "Arrêter" interrompt une analyse en cours. Si un nom a été jugé explicite à tort (format non prévu), cochez ou surlignez la ou les lignes et cliquez "Décrire les photos choisies (forcer le modèle)" : la description par le modèle vision est forcée et la proposition mise à jour.
+3. Cliquez "Appliquer la sélection" et confirmez. Les fichiers sont renommés, le lot est enregistré dans l'historique, la grille se rafraîchit.
+
+Les propositions non appliquées sont conservées à la fermeture de l'application et restaurées au prochain lancement si le même dossier est rouvert.
 
 ## 9. Enrôlement (onglet Enrolement)
 
@@ -157,6 +159,7 @@ Aucun de ces dossiers n'est à créer à la main : l'application les génère au
 | `faces_db.json` | Base des empreintes de visages (générée par l'enrôlement) |
 | `face_cache.json` | Cache des détections (supprimable sans risque, il se reconstruira) |
 | `rename_history.json` | Historique des lots de renommage |
+| `pending_plan.json` | Propositions de renommage non appliquées (restaurées au prochain lancement) |
 | `Reference/<nom>/` | Photos de référence par personne |
 
 Ces quatre derniers éléments contiennent des données personnelles (photos, empreintes biométriques) : ils sont générés localement et exclus du dépôt par le `.gitignore`.
