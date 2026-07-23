@@ -3,6 +3,7 @@ Reference/
 faces_db.json
 face_cache.json
 rename_history.json
+pending_plan.json
 
 # Python
 __pycache__/

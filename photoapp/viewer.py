@@ -139,7 +139,7 @@ class PhotoViewer(QWidget):
         self._faces_raw = []
         pixmap, self._scale = load_qpixmap(path)
         self.overlay.set_photo(pixmap, [], self.threshold)
-        self.info.setText(f"{os.path.basename(path)} : detection des visages...")
+        self.info.setText(f"{os.path.basename(path)} : détection des visages...")
         self._start_detection(path)
 
     def _start_detection(self, path):
@@ -173,7 +173,7 @@ class PhotoViewer(QWidget):
     def _refresh_info(self):
         faces = getattr(self, "_faces_raw", [])
         if not faces:
-            self.info.setText(f"{os.path.basename(self.current_path)} : aucun visage detecte.")
+            self.info.setText(f"{os.path.basename(self.current_path)} : aucun visage détecté.")
             return
         parts = []
         for f in faces:
@@ -188,4 +188,4 @@ class PhotoViewer(QWidget):
 
     def _on_failed(self, path, message):
         if path == self.current_path:
-            self.info.setText(f"Erreur de detection : {message}")
+            self.info.setText(f"Erreur de détection : {message}")

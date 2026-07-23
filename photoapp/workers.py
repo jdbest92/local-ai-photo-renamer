@@ -50,6 +50,61 @@ class PlanWorker(QThread):
             self.failed.emit(f"Erreur inattendue pendant l'analyse : {e}")
 
 
+class ForceDescribeWorker(QThread):
+    """Force la description par le modele vision sur une liste de lignes du tableau."""
+
+    log = Signal(str)
+    result = Signal(int, str, str, bool)  # ligne, nouveau nom, detail, succes
+    progress = Signal(int, int, str)      # index courant, total, nom de fichier
+    failed = Signal(str)                  # erreur fatale (Ollama injoignable...)
+    finished_ok = Signal()
+
+    def __init__(self, folder, items, model, timeout, use_faces, threshold,
+                 engine, parent=None):
+        super().__init__(parent)
+        self.folder = folder
+        self.items = items  # liste de (row, fname)
+        self.model = model
+        self.timeout = timeout
+        self.use_faces = use_faces
+        self.threshold = threshold
+        self.engine = engine
+        self._stop = False
+
+    def stop(self):
+        self._stop = True
+
+    def run(self):
+        import requests
+        try:
+            core.check_ollama(self.model, self.log.emit)
+        except core.PlanAborted as e:
+            self.failed.emit(str(e))
+            return
+        for i, (row, fname) in enumerate(self.items):
+            if self._stop:
+                break
+            self.log.emit(f"[verbose] description forcée de {fname} "
+                          f"({i + 1}/{len(self.items)})")
+            self.progress.emit(i + 1, len(self.items), fname)
+            try:
+                new_name, detail = core.describe_file(
+                    self.folder, fname, self.model, self.timeout,
+                    self.use_faces, self.threshold, self.engine)
+                self.result.emit(row, new_name, detail, True)
+            except requests.exceptions.ConnectionError:
+                self.engine.save_cache()
+                self.failed.emit("Impossible de contacter Ollama (ollama serve est-il lancé ?)")
+                return
+            except requests.exceptions.ReadTimeout:
+                self.result.emit(row, fname,
+                                 f"timeout après {self.timeout}s (augmenter le timeout)", False)
+            except Exception as e:
+                self.result.emit(row, fname, str(e), False)
+        self.engine.save_cache()
+        self.finished_ok.emit()
+
+
 class DetectWorker(QThread):
     """Detecte les visages d'une seule photo (pour la visionneuse)."""
 
@@ -89,7 +144,7 @@ class EnrollWorker(QThread):
             n = core.enroll_person(self.name, self.files, self.engine, log=self.log.emit)
             self.done.emit(self.name, n)
         except Exception as e:
-            self.failed.emit(f"Erreur pendant l'enrolement : {e}")
+            self.failed.emit(f"Erreur pendant l'enrôlement : {e}")
 
 
 class FilterScanWorker(QThread):
@@ -112,11 +167,11 @@ class FilterScanWorker(QThread):
         todo = [p for p in self.paths if not self.engine.is_cached(p)]
         total = len(todo)
         if not total:
-            self.log.emit("Analyse : toutes les photos sont deja en cache, rien a faire.")
+            self.log.emit("Analyse : toutes les photos sont déjà en cache, rien à faire.")
             self.finished_ok.emit()
             return
-        self.log.emit(f"Analyse demarree : {total} photo(s) a analyser "
-                      "(le premier passage charge le modele, comptez quelques secondes).")
+        self.log.emit(f"Analyse démarrée : {total} photo(s) à analyser "
+                      "(le premier passage charge le modèle, comptez quelques secondes).")
         self.progress.emit(0, total)
         for i, path in enumerate(todo):
             if self._stop:

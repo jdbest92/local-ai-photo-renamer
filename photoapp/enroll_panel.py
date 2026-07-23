@@ -20,8 +20,8 @@ class DropZone(QLabel):
         self.setAcceptDrops(True)
         self.setAlignment(Qt.AlignCenter)
         self.setMinimumHeight(120)
-        self.setText("Glissez-deposez ici les photos de reference\n"
-                     "(3 a 5 photos par personne, angles et eclairages varies)")
+        self.setText("Glissez-déposez ici les photos de référence\n"
+                     "(3 à 5 photos par personne, angles et éclairages variés)")
         self.setStyleSheet(
             "QLabel { border: 2px dashed #888; border-radius: 8px; "
             "color: #aaa; padding: 12px; }")
@@ -75,7 +75,7 @@ class EnrollPanel(QWidget):
         self.new_person_btn = QPushButton("Nouvelle personne...")
         self.new_person_btn.clicked.connect(self.new_person)
         row.addWidget(self.new_person_btn)
-        self.refresh_btn = QPushButton("Rafraichir la liste")
+        self.refresh_btn = QPushButton("Rafraîchir la liste")
         self.refresh_btn.clicked.connect(self.refresh_names)
         row.addWidget(self.refresh_btn)
         row.addStretch(1)
@@ -87,7 +87,7 @@ class EnrollPanel(QWidget):
 
         pick = QHBoxLayout()
         self.pick_folder_btn = QPushButton("Ajouter un dossier...")
-        self.pick_folder_btn.setToolTip("Ajoute toutes les images d'un dossier a la liste")
+        self.pick_folder_btn.setToolTip("Ajoute toutes les images d'un dossier à la liste")
         self.pick_folder_btn.clicked.connect(self.pick_folder)
         self.pick_files_btn = QPushButton("Ajouter des photos...")
         self.pick_files_btn.clicked.connect(self.pick_files)
@@ -101,7 +101,7 @@ class EnrollPanel(QWidget):
         layout.addWidget(self.file_list)
 
         btns = QHBoxLayout()
-        self.enroll_btn = QPushButton("Copier dans Reference/ et enroler")
+        self.enroll_btn = QPushButton("Copier dans Reference/ et enrôler")
         self.enroll_btn.setEnabled(False)
         self.enroll_btn.clicked.connect(self.start_enroll)
         self.clear_btn = QPushButton("Vider la liste")
@@ -144,11 +144,11 @@ class EnrollPanel(QWidget):
         if self.name_combo.findText(name) < 0:
             self.name_combo.addItem(name)
         self.name_combo.setCurrentText(name)
-        self.status.setText(f"Nouvelle personne : {name}. Ajoutez maintenant ses photos de reference.")
+        self.status.setText(f"Nouvelle personne : {name}. Ajoutez maintenant ses photos de référence.")
 
     def pick_folder(self):
         folder = QFileDialog.getExistingDirectory(
-            self, "Dossier contenant les photos de reference")
+            self, "Dossier contenant les photos de référence")
         if not folder:
             return
         paths = [os.path.join(folder, f) for f in sorted(os.listdir(folder))
@@ -156,11 +156,11 @@ class EnrollPanel(QWidget):
         if paths:
             self._on_files(paths)
         else:
-            QMessageBox.information(self, "Enrolement", "Ce dossier ne contient aucun fichier.")
+            QMessageBox.information(self, "Enrôlement", "Ce dossier ne contient aucun fichier.")
 
     def pick_files(self):
         paths, _ = QFileDialog.getOpenFileNames(
-            self, "Photos de reference", "",
+            self, "Photos de référence", "",
             "Images (*.jpg *.jpeg *.png *.webp)")
         if paths:
             self._on_files(paths)
@@ -173,7 +173,7 @@ class EnrollPanel(QWidget):
                 self.file_list.addItem(p)
                 added += 1
         self.enroll_btn.setEnabled(bool(self._pending_files))
-        self.status.setText(f"{len(self._pending_files)} photo(s) en attente d'enrolement.")
+        self.status.setText(f"{len(self._pending_files)} photo(s) en attente d'enrôlement.")
 
     def _clear(self):
         self._pending_files.clear()
@@ -184,15 +184,15 @@ class EnrollPanel(QWidget):
     def start_enroll(self):
         name = self.name_combo.currentText().strip()
         if not name:
-            QMessageBox.information(self, "Enrolement", "Indiquez le nom de la personne.")
+            QMessageBox.information(self, "Enrôlement", "Indiquez le nom de la personne.")
             return
         if not self._pending_files:
             return
         if self._worker is not None and self._worker.isRunning():
             return
         self.enroll_btn.setEnabled(False)
-        self.status.setText(f"Enrolement de {name} en cours (chargement du modele au premier lancement)...")
-        self.log.emit(f"--- Enrolement de {name} ({len(self._pending_files)} photo(s)) ---")
+        self.status.setText(f"Enrôlement de {name} en cours (chargement du modèle au premier lancement)...")
+        self.log.emit(f"--- Enrôlement de {name} ({len(self._pending_files)} photo(s)) ---")
         self._worker = workers.EnrollWorker(name, list(self._pending_files), self.engine, self)
         self._worker.log.connect(self.log.emit)
         self._worker.done.connect(self._on_done)
@@ -200,13 +200,13 @@ class EnrollPanel(QWidget):
         self._worker.start()
 
     def _on_done(self, name, n_added):
-        self.status.setText(f"{n_added} visage(s) ajoute(s) pour {name}.")
+        self.status.setText(f"{n_added} visage(s) ajouté(s) pour {name}.")
         self._clear()
         self.refresh_names()
         self.db_updated.emit()
 
     def _on_failed(self, message):
-        self.status.setText("Echec de l'enrolement.")
+        self.status.setText("Échec de l'enrôlement.")
         self.enroll_btn.setEnabled(bool(self._pending_files))
         self.log.emit(f"[ERREUR] {message}")
-        QMessageBox.warning(self, "Enrolement", message)
+        QMessageBox.warning(self, "Enrôlement", message)

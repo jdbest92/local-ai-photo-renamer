@@ -97,7 +97,7 @@ def init_face_app(use_gpu):
         print("Dependances manquantes pour --faces. Installe-les avec :")
         print("  pip install insightface onnxruntime opencv-python-headless numpy --break-system-packages")
         sys.exit(1)
-    vprint("chargement du modele insightface (buffalo_l)")
+    vprint("chargement du modèle insightface (buffalo_l)")
     app = FaceAnalysis(name="buffalo_l")
     app.prepare(ctx_id=0 if use_gpu else -1, det_size=(640, 640))
     return app
@@ -201,7 +201,7 @@ def describe_image(path, model, timeout, known_names=None):
             "num_ctx": 2048,
         },
     }
-    vprint(f"envoi du prompt a Ollama (modele: {model}, timeout: {timeout}s)")
+    vprint(f"envoi du prompt à Ollama (modèle: {model}, timeout: {timeout}s)")
     t0 = time.monotonic()
     resp = requests.post(OLLAMA_URL, json=payload, timeout=timeout)
     resp.raise_for_status()
@@ -211,8 +211,8 @@ def describe_image(path, model, timeout, known_names=None):
     load_duration = data.get("load_duration")
     eval_count = data.get("eval_count")
     if load_duration is not None:
-        vprint(f"chargement modele: {load_duration / 1e9:.2f}s (0 si deja charge en memoire)")
-    vprint(f"reponse recue en {elapsed:.2f}s ({eval_count} tokens generes)" if eval_count else f"reponse recue en {elapsed:.2f}s")
+        vprint(f"chargement modèle: {load_duration / 1e9:.2f}s (0 si deja charge en memoire)")
+    vprint(f"réponse reçue en {elapsed:.2f}s ({eval_count} tokens generes)" if eval_count else f"réponse reçue en {elapsed:.2f}s")
 
     return data.get("message", {}).get("content", "").strip()
 
@@ -232,10 +232,10 @@ def process_folder(folder, model, apply, timeout, face_app=None, faces_db=None, 
         if os.path.splitext(f)[1].lower() in EXTENSIONS
     )
     if not files:
-        print("Aucune photo trouvee dans ce dossier.")
+        print("Aucune photo trouvée dans ce dossier.")
         return
 
-    print(f"{len(files)} photo(s) trouvee(s). Modele : {model}. "
+    print(f"{len(files)} photo(s) trouvée(s). Modele : {model}. "
           f"Mode : {'APPLICATION' if apply else 'DRY-RUN (aucun fichier modifie)'}\n")
 
     for fname in files:
@@ -248,26 +248,26 @@ def process_folder(folder, model, apply, timeout, face_app=None, faces_db=None, 
         already_prefixed = ALREADY_PREFIXED_RE.match(stem)
         if already_prefixed:
             if not reprocess_faces or face_app is None:
-                print(f"  {fname}  ->  (deja horodate, ignore)")
+                print(f"  {fname}  ->  (déjà horodaté, ignoré)")
                 continue
 
             existing_slug = stem[already_prefixed.end():]
             existing_parts = set(existing_slug.lower().split("_"))
             known_lower = {name.lower() for name in faces_db.keys()}
             if existing_parts & known_lower:
-                print(f"  {fname}  ->  (deja horodate, nom deja present, ignore)")
+                print(f"  {fname}  ->  (déjà horodaté, nom déjà présent, ignore)")
                 continue
 
             vprint(f"retraitement pour reconnaissance faciale : {fname}")
             known_names = recognize_faces(path, face_app, faces_db, face_threshold)
             if not known_names:
-                print(f"  {fname}  ->  (deja horodate, aucun visage reconnu, inchange)")
+                print(f"  {fname}  ->  (déjà horodaté, aucun visage reconnu, inchange)")
                 continue
 
             names_slug = slugify("_".join(known_names))
             slug = f"{names_slug}_{existing_slug}".strip("_") or "photo"
             timestamp = stem[:already_prefixed.end()].rstrip("_")
-            desc_label = f"visages ajoutes : {', '.join(known_names)}"
+            desc_label = f"visages ajoutés : {', '.join(known_names)}"
 
             new_name = f"{timestamp}_{slug}{ext}"
             new_path = os.path.join(folder, new_name)
@@ -303,7 +303,7 @@ def process_folder(folder, model, apply, timeout, face_app=None, faces_db=None, 
                 print("Erreur : impossible de contacter Ollama (ollama serve est-il lance ?)")
                 sys.exit(1)
             except requests.exceptions.ReadTimeout:
-                print(f"  [ERREUR] {fname} : timeout apres {timeout}s (modele trop lent a repondre, augmente --timeout)")
+                print(f"  [ERREUR] {fname} : timeout après {timeout}s (modele trop lent a repondre, augmente --timeout)")
                 continue
             except Exception as e:
                 print(f"  [ERREUR] {fname} : {e}")
@@ -375,7 +375,7 @@ def main():
             print(f"Base de visages vide : {args.faces} (utilise enroll_faces.py pour l'alimenter)")
             sys.exit(1)
         face_app = init_face_app(args.faces_gpu)
-        print(f"Reconnaissance faciale activee ({len(faces_db)} personne(s) en base : {', '.join(faces_db.keys())})")
+        print(f"Reconnaissance faciale activée ({len(faces_db)} personne(s) en base : {', '.join(faces_db.keys())})")
 
     if args.reprocess_faces and not args.faces:
         print("--reprocess-faces necessite --faces (impossible de reconnaitre des visages sans base).")

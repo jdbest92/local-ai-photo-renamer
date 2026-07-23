@@ -194,16 +194,16 @@ def check_ollama(model, log):
         resp.raise_for_status()
         models = resp.json().get("models", [])
     except Exception:
-        log("[attention] Ollama injoignable : les photos a nom generique ne pourront "
-            "pas etre decrites (lancez 'ollama serve' puis relancez l'analyse).")
+        log("[attention] Ollama injoignable : les photos à nom générique ne pourront "
+            "pas être décrites (lancez 'ollama serve' puis relancez l'analyse).")
         return False
     names = {m.get("name", "") for m in models}
     if model not in names and f"{model}:latest" not in names:
         raise PlanAborted(
-            f"Le modele '{model}' n'est pas installe dans Ollama "
-            f"(installes : {', '.join(sorted(names)) or 'aucun'}). "
-            f"Telechargez-le avec : ollama pull {model}")
-    log(f"Ollama OK : modele '{model}' disponible.")
+            f"Le modèle '{model}' n'est pas installé dans Ollama "
+            f"(installés : {', '.join(sorted(names)) or 'aucun'}). "
+            f"Téléchargez-le avec : ollama pull {model}")
+    log(f"Ollama OK : modèle '{model}' disponible.")
     return True
 
 
@@ -394,14 +394,14 @@ def build_plan(folder, model, timeout, use_faces, threshold, reprocess_faces,
     """
     files = list_photos(folder, recursive)
     if not files:
-        log("Aucune photo trouvee dans ce dossier.")
+        log("Aucune photo trouvée dans ce dossier.")
         return
-    log(f"{len(files)} photo(s) trouvee(s)"
+    log(f"{len(files)} photo(s) trouvée(s)"
         + (" (sous-dossiers inclus)" if recursive else "")
-        + f". Modele : {model}. Mode : APERCU (aucun fichier modifie)")
+        + f". Modele : {model}. Mode : APERÇU (aucun fichier modifié)")
     check_ollama(model, log)
     if use_faces and engine.db:
-        log(f"Reconnaissance faciale activee ({len(engine.db)} personne(s) en base : "
+        log(f"Reconnaissance faciale activée ({len(engine.db)} personne(s) en base : "
             f"{', '.join(engine.persons())})")
 
     taken = {f.lower() for f in files}
@@ -432,31 +432,31 @@ def build_plan(folder, model, timeout, use_faces, threshold, reprocess_faces,
         if already:
             if not (reprocess_faces and use_faces and engine.db):
                 emit({"old": fname, "new": fname, "status": "skip",
-                      "detail": "deja horodate, ignore", "check": False})
+                      "detail": "déjà horodaté, ignoré", "check": False})
                 continue
             existing_slug = stem[already.end():]
             existing_parts = set(existing_slug.lower().split("_"))
             known_lower = {n.lower() for n in engine.db}
             if existing_parts & known_lower:
                 emit({"old": fname, "new": fname, "status": "skip",
-                      "detail": "deja horodate, nom deja present", "check": False})
+                      "detail": "déjà horodaté, nom déjà présent", "check": False})
                 continue
             known_names = engine.names_at(path, threshold)
             if not known_names:
                 emit({"old": fname, "new": fname, "status": "skip",
-                      "detail": "deja horodate, aucun visage reconnu", "check": False})
+                      "detail": "déjà horodaté, aucun visage reconnu", "check": False})
                 continue
             names_slug = rp.slugify("_".join(known_names))
             slug = f"{names_slug}_{existing_slug}".strip("_") or "photo"
             timestamp = stem[:already.end()].rstrip("_")
             new_name = reserve(os.path.join(subdir, f"{timestamp}_{slug}{ext}"), fname)
             emit({"old": fname, "new": new_name, "status": "ok",
-                  "detail": f"visages ajoutes : {', '.join(known_names)}", "check": True})
+                  "detail": f"visages ajoutés : {', '.join(known_names)}", "check": True})
             continue
 
         timestamp = rp.get_exif_datetime(path)
         if timestamp:
-            log(f"[verbose] horodatage EXIF trouve : {timestamp}")
+            log(f"[verbose] horodatage EXIF trouvé : {timestamp}")
         else:
             timestamp = timestamp_from_name(stem)
             if timestamp:
@@ -477,10 +477,10 @@ def build_plan(folder, model, timeout, use_faces, threshold, reprocess_faces,
             except Exception as e:
                 import requests
                 if isinstance(e, requests.exceptions.ConnectionError):
-                    raise PlanAborted("Impossible de contacter Ollama (ollama serve est-il lance ?)")
+                    raise PlanAborted("Impossible de contacter Ollama (ollama serve est-il lancé ?)")
                 if isinstance(e, requests.exceptions.ReadTimeout):
                     emit({"old": fname, "new": fname, "status": "error",
-                          "detail": f"timeout apres {timeout}s (augmenter le timeout)", "check": False})
+                          "detail": f"timeout après {timeout}s (augmenter le timeout)", "check": False})
                     continue
                 emit({"old": fname, "new": fname, "status": "error",
                       "detail": str(e), "check": False})
@@ -492,17 +492,48 @@ def build_plan(folder, model, timeout, use_faces, threshold, reprocess_faces,
                 slug = rp.slugify(description) or "photo"
                 detail = description
         else:
-            log(f"[verbose] nom '{stem}' juge deja explicite, pas d'appel au modele vision")
+            log(f"[verbose] nom '{stem}' jugé déjà explicite, pas d'appel au modèle vision")
             slug = rp.slugify(stem) or "photo"
-            detail = "nom conserve, horodatage ajoute"
+            detail = "nom conservé, horodatage ajouté"
 
         new_name = reserve(os.path.join(subdir, f"{timestamp}_{slug}{ext}"), fname)
         if new_name == fname:
             emit({"old": fname, "new": fname, "status": "skip",
-                  "detail": "aucun changement necessaire", "check": False})
+                  "detail": "aucun changement nécessaire", "check": False})
         else:
             emit({"old": fname, "new": new_name, "status": "ok",
                   "detail": detail, "check": True})
+
+
+def describe_file(folder, fname, model, timeout, use_faces, threshold, engine):
+    """Propose un nouveau nom pour UNE photo en forcant la description par le
+    modele vision, meme si son nom est juge explicite par is_generic_name.
+
+    Renvoie (new_name, detail). Leve les exceptions reseau de describe_image.
+    """
+    path = os.path.join(folder, fname)
+    subdir = os.path.dirname(fname)
+    stem, ext = os.path.splitext(os.path.basename(fname))
+    ext = ext.lower()
+
+    already = rp.ALREADY_PREFIXED_RE.match(stem)
+    if already:
+        timestamp = stem[:already.end()].rstrip("_")
+    else:
+        timestamp = rp.get_exif_datetime(path) or timestamp_from_name(stem) \
+            or datetime.fromtimestamp(os.path.getmtime(path)).strftime("%Y%m%d_%H%M%S")
+
+    known_names = []
+    if use_faces and engine.db:
+        known_names = engine.names_at(path, threshold)
+    description = rp.describe_image(path, model, timeout, known_names=known_names)
+    if known_names:
+        slug = f"{rp.slugify('_'.join(known_names))}_{rp.slugify(description)}".strip("_") or "photo"
+        detail = f"{', '.join(known_names)} : {description}"
+    else:
+        slug = rp.slugify(description) or "photo"
+        detail = description
+    return os.path.join(subdir, f"{timestamp}_{slug}{ext}"), detail
 
 
 # ---------- application des renommages ----------
@@ -515,7 +546,7 @@ def validate_filename(name):
     if not name or not name.strip():
         return "nom vide"
     if any(c in INVALID_CHARS for c in name):
-        return "caracteres interdits ( \\ / : * ? \" < > | )"
+        return "caractères interdits ( \\ / : * ? \" < > | )"
     if not os.path.splitext(name)[1]:
         return "extension manquante"
     return None
@@ -556,7 +587,7 @@ def apply_renames(folder, pairs, log, engine=None):
         log(f"  {old}  ->  {final}")
     if renames:
         record_batch(folder, renames)
-        log(f"{len(renames)} fichier(s) renomme(s), lot enregistre dans l'historique.")
+        log(f"{len(renames)} fichier(s) renommé(s), lot enregistre dans l'historique.")
     for e in errors:
         log(f"  [ERREUR] {e}")
     return renames, errors
@@ -653,9 +684,9 @@ def enroll_person(name, file_paths, engine, log):
         except OSError as e:
             log(f"  [ERREUR] copie de {p} : {e}")
     if not copied:
-        log("Aucune photo de reference copiee.")
+        log("Aucune photo de référence copiée.")
         return 0
-    log(f"{len(copied)} photo(s) copiee(s) dans {dest_dir}")
+    log(f"{len(copied)} photo(s) copiée(s) dans {dest_dir}")
 
     engine.ensure_app()
     db = ef.load_db(engine.db_path)
@@ -677,5 +708,5 @@ def enroll_person(name, file_paths, engine, log):
     db[name] = embeddings
     ef.save_db(db, engine.db_path)
     engine.reload_db()
-    log(f"{n_added} visage(s) ajoute(s) pour '{name}'. Total en base : {len(embeddings)}.")
+    log(f"{n_added} visage(s) ajouté(s) pour '{name}'. Total en base : {len(embeddings)}.")
     return n_added

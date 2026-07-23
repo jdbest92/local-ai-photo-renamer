@@ -117,7 +117,7 @@ def main():
 
     db[args.name] = embeddings
     save_db(db, args.db)
-    print(f"\n{n_added} visage(s) ajoute(s) pour '{args.name}'. Total en base pour cette personne : {len(embeddings)}.")
+    print(f"\n{n_added} visage(s) ajouté(s) pour '{args.name}'. Total en base pour cette personne : {len(embeddings)}.")
     print(f"Base sauvegardee dans {args.db}")
 
 

@@ -19,7 +19,7 @@ class HistoryPanel(QWidget):
         btns = QHBoxLayout()
         self.undo_btn = QPushButton("Annuler le dernier lot")
         self.undo_btn.clicked.connect(self.undo_last)
-        self.refresh_btn = QPushButton("Rafraichir")
+        self.refresh_btn = QPushButton("Rafraîchir")
         self.refresh_btn.clicked.connect(self.refresh)
         btns.addWidget(self.undo_btn)
         btns.addWidget(self.refresh_btn)
@@ -41,7 +41,7 @@ class HistoryPanel(QWidget):
                 self.list.addItem(f"      ... et {len(batch['renames']) - 8} autre(s)")
         self.undo_btn.setEnabled(bool(history))
         if not history:
-            self.list.addItem("Aucun lot de renommage enregistre.")
+            self.list.addItem("Aucun lot de renommage enregistré.")
 
     def undo_last(self):
         history = core.load_history()
@@ -62,5 +62,5 @@ class HistoryPanel(QWidget):
         self.undo_done.emit()
         if errors:
             QMessageBox.warning(self, "Annulation",
-                                "Certains fichiers n'ont pas pu etre restaures :\n"
+                                "Certains fichiers n'ont pas pu être restaurés :\n"
                                 + "\n".join(errors[:10]))
